@@ -2,19 +2,24 @@
 -- found (e.g. lgi). If LuaRocks is not installed, do nothing.
 pcall(require, "luarocks.loader")
 
+-- AwesomeWM libraries
 local gears         = require("gears")
 local awful         = require("awful")
 local wibox         = require("wibox")
-local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local menubar       = require("menubar")
-local xrandr        = require("xrandr")
 local hotkeys_popup = require("awful.hotkeys_popup")
+
+-- Common global definitions
+local common = require("common")
 
 require("awful.autofocus")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
+
+-- Core Components
+local menu = require("components.menu")
 
 -- Widgets
 local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")
@@ -26,9 +31,8 @@ local minimiser          = require("widgets.minimiser.minimiser")
 local language_widget    = require("widgets.keyboard-language-widget.keyboard-language-widget")
 
 -- Utilities
-
--- Adjusts the dpi automatically
-awful.screen.set_auto_dpi_enabled( true )
+local autostart = require("utilities.autostart")
+local xrandr    = require("utilities.xrandr")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -56,21 +60,14 @@ end
 -- }}}
 
 -- {{{ Variable definitions
---
 
--- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/redTheme.lua")
-beautiful.font = "sans 9"
---beautiful.font = "JetBrains Mono Nerd Font 10"
+-- Initialise the beautiful module using the theme configuration.
 
--- This is used later as the default terminal and editor to run.
-Terminal = "alacritty"
-editor = os.getenv("EDITOR") or "vim"
-editor_cmd = Terminal .. " -e " .. editor
 
--- Default modkey.
--- Swapped the modkey to be the control key. That way keybindings on the left can be accessed using the right ctrl
+-- Swapped the modkey to be the control key.
+-- That way keybindings on the left can be accessed using the right ctrl
 modkey = "Control"
+-- The second modkey2 is the super key.
 modkey2 = "Mod4"
 
 -- Toggle switch to turn picom on/off
@@ -108,29 +105,9 @@ awful.layout.layouts = {
 }
 
 -- {{{ Menu
--- Create a launcher widget and a main menu
-myawesomemenu = {
-   { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
-   { "manual", Terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awesome.conffile },
-   { "restart", awesome.restart },
-   { "quit", function() awesome.quit() end },
-}
-
-mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", Terminal }
-                                  }
-                        })
-
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-                                     menu = mymainmenu })
-
 -- Menubar configuration
-menubar.utils.terminal = Terminal -- Set the terminal for applications that require it
+menubar.utils.terminal = common.terminal -- Set the terminal for applications that require it
 -- }}}
-
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
 -- Create a textclock widget
@@ -167,6 +144,7 @@ local tasklist_buttons = gears.table.join(
                                               end
                                           end),
                      awful.button({ }, 3, function()
+                                              -- TODO: customise open client list
                                               awful.menu.client_list({ theme = { width = 250 } })
                                           end),
                      awful.button({ }, 4, function ()
@@ -178,8 +156,8 @@ local tasklist_buttons = gears.table.join(
 
 local function set_wallpaper(s)
     -- Wallpaper
-    if beautiful.wallpaper then
-        local wallpaper = beautiful.wallpaper
+    if common.beautiful.wallpaper then
+        local wallpaper = common.beautiful.wallpaper
         -- If wallpaper is a function, call it with the screen
         if type(wallpaper) == "function" then
             wallpaper = wallpaper(s)
@@ -196,7 +174,6 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    -- awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
     awful.tag({ "1", "2", "3", "4", "5"}, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
@@ -230,33 +207,6 @@ awful.screen.connect_for_each_screen(function(s)
 					spacing = 20,
 					layout  = wibox.layout.fixed.horizontal
 				},
-				-- Notice that there is *NO* wibox.wibox prefix, it is a template,
-				-- not a widget instance.
-				widget_template = {
-					{
-						{
-							{
-								{
-									id     = 'icon_role',
-									widget = wibox.widget.imagebox,
-								},
-								top = 6,
-								bottom = 6,
-								widget  = wibox.container.margin,
-							},
-							{
-								id     = 'text_role',
-								widget = wibox.widget.textbox,
-							},
-							layout = wibox.layout.fixed.horizontal,
-						},
-						left  = 20,
-						right = 20,
-						widget = wibox.container.margin
-					},
-					id     = 'background_role',
-					widget = wibox.container.background,
-			},
     }
 
 		local separator = wibox.widget.textbox(" ")
@@ -356,7 +306,7 @@ end)
 
 -- {{{ Mouse bindings
 root.buttons(gears.table.join(
-    awful.button({ }, 3, function () mymainmenu:toggle() end),
+    awful.button({ }, 3, function () menu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
     awful.button({ }, 5, awful.tag.viewprev)
 ))
@@ -439,7 +389,7 @@ globalkeys = gears.table.join(
          {description = "focus client to the right", group = "client"}
      ),
 
-     awful.key({ modkey2,           }, "w", function () mymainmenu:show() end,
+     awful.key({ modkey2,           }, "w", function () menu:show() end,
                {description = "show main menu", group = "awesome"}),
 
     -- Layout manipulation
@@ -479,7 +429,7 @@ globalkeys = gears.table.join(
         {description = "go back", group = "client"}),
 
     -- Standard program
-    awful.key({ modkey,           }, "Return", function () awful.spawn(Terminal) end,
+    awful.key({ modkey,           }, "Return", function () awful.spawn(common.terminal) end,
               {description = "open a terminal", group = "launcher"}),
     awful.key({ modkey, "Mod4" }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
@@ -665,8 +615,8 @@ root.keys(globalkeys)
 awful.rules.rules = {
     -- All clients will match this rule.
     { rule = { },
-      properties = { border_width = beautiful.border_width,
-                     border_color = beautiful.border_normal,
+      properties = { border_width = common.beautiful.border_width,
+                     border_color = common.beautiful.border_normal,
                      focus = awful.client.focus.filter,
                      raise = true,
                      keys = clientkeys,
@@ -730,13 +680,8 @@ client.connect_signal("manage", function (c)
         awful.placement.no_offscreen(c)
     end
 end)
-client.connect_signal("focus", function(c) c.border_color = "#af0000" end)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) c.border_color = common.beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = common.beautiful.border_normal end)
 -- }}}
 
--- Autostart
-awful.spawn.with_shell("compinit -d $XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION")
-awful.spawn.with_shell("picom -b")
-awful.spawn.with_shell("libinput-gestures-setup start")
-awful.spawn.with_shell("~/.config/awesome/setup_monitors.sh")
-
+autostart()
