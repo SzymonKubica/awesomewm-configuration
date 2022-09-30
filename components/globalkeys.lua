@@ -78,15 +78,17 @@ local function add_keybinding(description)
   end
 end
 
-local globalkeys = gears.table.join()
-
-local function create_group(group_name, ...)
+local function join_group(group_name, keys, ...)
   for _, binding in pairs({...}) do
-    gears.table.join(globalkeys, binding(group_name))
+    keys = gears.table.join(keys, binding(group_name))
   end
+  return keys
 end
 
-create_group("awesome",
+
+local globalkeys = gears.table.join()
+
+globalkeys = join_group("awesome", globalkeys,
   add_keybinding("Toggle picom on/off")
     ({}, "XF86Favorites") (togglePicom),
 
@@ -102,7 +104,7 @@ create_group("awesome",
     (function() awful.spawn.with_shell("bash ~/.local/bin/lock") end)
 )
 
-create_group("media",
+globalkeys = join_group("media", globalkeys,
   add_keybinding("Change screen layout")
     ({ control, super }, "d") (xrandr.xrandr),
 
@@ -143,7 +145,7 @@ create_group("media",
     ({}, "XF86MonBrightnessDown") (function () brightness_widget:dec() end)
   )
 
-create_group("screenshot",
+globalkeys = join_group("screenshot", globalkeys,
   add_keybinding("Take a screenshot of entire screen")
     ({ control, }, "Print") (function() awful.spawn.with_shell("gscreenshot -f ~/Screenshots") end),
 
@@ -154,13 +156,13 @@ create_group("screenshot",
     ({ control, super }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end)
 )
 
-create_group("input",
+globalkeys = join_group("input", globalkeys,
   add_keybinding("Change keyboard layout")
     ({ super }, "space") (language_widget.switch)
 )
 
 
-create_group("tag",
+globalkeys = join_group("tag", globalkeys,
   add_keybinding("view previous")
     ({ control }, "Left")   (awful.tag.viewprev),
 
@@ -173,8 +175,7 @@ create_group("tag",
     ({ control }, "Escape") (awful.tag.history.restore)
 )
 
-create_group("client",
-  -- Vim-like configuration for client focus
+globalkeys = join_group("client", globalkeys,
   add_keybinding("focus client below")
     ({ control }, "j")
     (function () awful.client.focus.global_bydirection("down") end),
@@ -192,13 +193,11 @@ create_group("client",
     (function () awful.client.focus.global_bydirection("right") end)
 )
 
-
-globalkeys = gears.table.join(
+globalkeys = gears.table.join(globalkeys,
     -- Layout manipulation
-		awful.key({ control, "Shift"}, "h", function ()
-			awful.client.swap.global_bydirection("left")
-		end,
-		{description = "swap with left client", group = "client"}),
+		add_keybinding("swap with left client")
+		({ control, "Shift"}, "h")
+    (function () awful.client.swap.global_bydirection("left") end)("client"),
 
 		awful.key({ control, "Shift"}, "l", function ()
 			awful.client.swap.global_bydirection("right")
