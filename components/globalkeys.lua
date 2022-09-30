@@ -51,131 +51,143 @@ local function build_label(description, group)
   }
 end
 
-local function add_mapping_to_group(group, description)
+-- The add_mapping function takes in a group and a description of a specific
+-- action for which we want to create a key shortcut. Then the function returns
+-- another function which accepts the combination of modifier keys and the
+-- corresponding key to trigger the shortcut. Then that function returns a
+-- function which takes in the actual action which we want to perform once the
+-- key combination is pressed and returns the awful.key mapping.
+-- The reason for that convoluted way of constructing the keybinding from
+-- partial functions is to make the code for defining keybindings as concise
+-- and descriptive as possible.
+local function add_keybinding(description)
   return function(modifier_combination, trigger_key)
     return function(action)
-      return awful.key(
-        modifier_combination,
-        trigger_key,
-        action,
-        build_label(description, group))
+      return function(group_name)
+        return awful.key(
+          modifier_combination,
+          trigger_key,
+          action,
+          build_label(description, group_name))
+      end
     end
   end
 end
 
-local globalkeys = gears.table.join(
-    add_mapping_to_group("awesome", "Toggle picom on/off")
-      ({}, "XF86Favorites") (togglePicom),
+local globalkeys = gears.table.join()
 
-    add_mapping_to_group("awesome", "Toggle picom on/off")
-		  ({modkey, "Shift"}, "d") (togglePicom),
+local function define_group(group_name, ...)
+  for _, binding in pairs(...) do
+    gears.table.join(globalkeys, binding(group_name))
+  end
+end
 
-    add_mapping_to_group("media", "Change screen layout")
-		  ({ modkey, modkey2 }, "d") (xrandr.xrandr),
+define_group("awesome",
+  add_keybinding("Toggle picom on/off")
+    ({}, "XF86Favorites") (togglePicom),
 
-    add_mapping_to_group("media", "Change screen layout")
-		  ({}, "XF86Display") (xrandr.xrandr),
+  add_keybinding("Toggle picom on/off")
+    ({modkey, "Shift"}, "d") (togglePicom),
 
-    add_mapping_to_group("media", "Play/Pause music")
-		  ({}, "XF86AudioPlay") (toggle_play_pause),
+  add_keybinding("show main menu")
+    ({ modkey2,           }, "w") (function () menu:show() end),
 
-    add_mapping_to_group("media", "Play next track")
-		  ({}, "XF86AudioNext") (function() awful.spawn.with_shell("mpc next") end),
+  add_keybinding("lock")
+    ({ modkey2 }, "Escape") (function() awful.spawn.with_shell("bash ~/.local/bin/lock") end)
+  )
 
-    add_mapping_to_group("media", "Play previous track")
-		  ({}, "XF86AudioPrev") (function() awful.spawn.with_shell("mpc prev") end),
+define_group("media",
+  add_keybinding("Change screen layout")
+    ({ modkey, modkey2 }, "d") (xrandr.xrandr),
 
-    add_mapping_to_group("media", "Increase volume")
-		  ({}, "XF86AudioRaiseVolume") (function() volume_widget:inc(5) end),
+  add_keybinding("Change screen layout")
+    ({}, "XF86Display") (xrandr.xrandr),
 
-    add_mapping_to_group("media", "Decrease volume")
-		  ({}, "XF86AudioLowerVolume") (function() volume_widget:dec(5) end),
+  add_keybinding("Play/Pause music")
+    ({}, "XF86AudioPlay") (toggle_play_pause),
 
-    add_mapping_to_group("media", "Toggle mute")
-		  ({}, "XF86AudioMute") (function () volume_widget:toggle() end),
+  add_keybinding("Play next track")
+    ({}, "XF86AudioNext") (function() awful.spawn.with_shell("mpc next") end),
 
-    add_mapping_to_group("media", "Toggle mic mute")
-		  ({}, "XF86AudioMicMute") (function() os.execute("pactl set-source-mute 5 toggle") end),
+  add_keybinding("Play previous track")
+    ({}, "XF86AudioPrev") (function() awful.spawn.with_shell("mpc prev") end),
 
-    add_mapping_to_group("media", "Increase brightness")
-		  ({}, "XF86MonBrightnessUp") (function () brightness_widget:inc() end),
+  add_keybinding("Increase volume")
+    ({}, "XF86AudioRaiseVolume") (function() volume_widget:inc(5) end),
 
-    add_mapping_to_group("media", "Increase brightness")
-		  ({modkey, modkey2}, "i") (function () brightness_widget:inc() end),
+  add_keybinding("Decrease volume")
+    ({}, "XF86AudioLowerVolume") (function() volume_widget:dec(5) end),
 
+  add_keybinding("Toggle mute")
+    ({}, "XF86AudioMute") (function () volume_widget:toggle() end),
 
-	  add_mapping_to_group("media", "Decrease brightness")
-		  ({modkey, modkey2}, "u") (function () brightness_widget:dec() end),
+  add_keybinding("Toggle mic mute")
+    ({}, "XF86AudioMicMute") (function() os.execute("pactl set-source-mute 5 toggle") end),
 
+  add_keybinding("Increase brightness")
+    ({}, "XF86MonBrightnessUp") (function () brightness_widget:inc() end),
 
-    add_mapping_to_group("media", "Decrease brightness")
-		  ({}, "XF86MonBrightnessDown") (function () brightness_widget:dec() end),
+  add_keybinding("Increase brightness")
+    ({modkey, modkey2}, "i") (function () brightness_widget:inc() end),
 
+  add_keybinding("Decrease brightness")
+    ({modkey, modkey2}, "u") (function () brightness_widget:dec() end),
 
-	  add_mapping_to_group("screenshot", "Take a screenshot of entire screen")
-		  ({ modkey, }, "Print") (function() awful.spawn.with_shell("gscreenshot -f ~/Screenshots") end),
+  add_keybinding("Decrease brightness")
+    ({}, "XF86MonBrightnessDown") (function () brightness_widget:dec() end)
+  )
 
+define_group("screenshot",
+  add_keybinding("Take a screenshot of entire screen")
+    ({ modkey, }, "Print") (function() awful.spawn.with_shell("gscreenshot -f ~/Screenshots") end),
 
-	  add_mapping_to_group("screenshot", "Take a screenshot of selection")
-		  ({ }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end),
+  add_keybinding("Take a screenshot of selection")
+    ({ }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end),
 
+  add_keybinding("Take a screenshot of selection and save")
+    ({ modkey, modkey2 }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end)
+)
 
-	  add_mapping_to_group("screenshot", "Take a screenshot of selection and save")
-		  ({ modkey, modkey2 }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end),
-
-
-    add_mapping_to_group("input", "Change keyboard layout")
-      ({ modkey2 }, "space") (language_widget.switch),
-
-
-    add_mapping_to_group("awesome", "show help")
-      ({ modkey }, "s")      (hotkeys_popup.show_help),
-
-
-    add_mapping_to_group("tag", "view previous")
-      ({ modkey }, "Left")   (awful.tag.viewprev),
-
-
-    add_mapping_to_group("tag", "view next")
-      ({ modkey }, "Right")  (awful.tag.viewnext),
-
-
-    add_mapping_to_group("tag", "go back")
-      ({ modkey }, "Escape") (awful.tag.history.restore),
+define_group("input",
+  add_keybinding("Change keyboard layout")
+    ({ modkey2 }, "space") (language_widget.switch)
+)
 
 
-    add_mapping_to_group("awesome", "lock")
-      ({ modkey2 }, "Escape") (function() awful.spawn.with_shell("bash ~/.local/bin/lock") end),
+define_group("tag",
+  add_keybinding("view previous")
+    ({ modkey }, "Left")   (awful.tag.viewprev),
 
--- add_mappingVim-like configuration for client focus
-     awful.key({ modkey,           }, "j",
-         function ()
-             awful.client.focus.global_bydirection("down")
-         end,
-         {description = "focus client below", group = "client"}
-     ),
-     awful.key({ modkey,           }, "k",
-         function ()
-             awful.client.focus.global_bydirection("up")
-         end,
-         {description = "focus client above", group = "client"}
-     ),
-     awful.key({ modkey,           }, "h",
-         function ()
-             awful.client.focus.global_bydirection("left")
-         end,
-         {description = "focus client to the left", group = "client"}
-     ),
-     awful.key({ modkey,           }, "l",
-         function ()
-             awful.client.focus.global_bydirection("right")
-         end,
-         {description = "focus client to the right", group = "client"}
-     ),
 
-     awful.key({ modkey2,           }, "w", function () menu:show() end,
-               {description = "show main menu", group = "awesome"}),
+  add_keybinding("view next")
+    ({ modkey }, "Right")  (awful.tag.viewnext),
 
+
+  add_keybinding("go back")
+    ({ modkey }, "Escape") (awful.tag.history.restore)
+)
+
+define_group("client",
+  -- Vim-like configuration for client focus
+  add_keybinding("focus client below")
+    ({ modkey }, "j")
+    (function () awful.client.focus.global_bydirection("down") end),
+
+  add_keybinding("focus client above")
+    ({ modkey }, "k")
+    (function () awful.client.focus.global_bydirection("up") end),
+
+  add_keybinding("focus client to the left")
+    ({ modkey }, "h")
+    (function () awful.client.focus.global_bydirection("left") end),
+
+  add_keybinding("focus client to the right")
+    ({ modkey }, "l")
+    (function () awful.client.focus.global_bydirection("right") end)
+)
+
+
+globalkeys = gears.table.join(
     -- Layout manipulation
 		awful.key({ modkey, "Shift"}, "h", function ()
 			awful.client.swap.global_bydirection("left")
