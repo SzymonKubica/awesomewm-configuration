@@ -67,9 +67,9 @@ end
 
 -- Swapped the modkey to be the control key.
 -- That way keybindings on the left can be accessed using the right ctrl
-modkey = "Control"
+control = "Control"
 -- The second modkey2 is the super key.
-modkey2 = "Mod4"
+super = "Mod4"
 
 -- Toggle switch to turn picom on/off
 local isPicomOn = true
@@ -117,13 +117,13 @@ mytextclock = wibox.widget.textclock("%d %b %H:%M")
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
                     awful.button({ }, 1, function(t) t:view_only() end),
-                    awful.button({ modkey }, 1, function(t)
+                    awful.button({ control }, 1, function(t)
                                               if client.focus then
                                                   client.focus:move_to_tag(t)
                                               end
                                           end),
                     awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, function(t)
+                    awful.button({ control }, 3, function(t)
                                               if client.focus then
                                                   client.focus:toggle_tag(t)
                                               end
@@ -316,7 +316,7 @@ root.buttons(gears.table.join(
 -- {{{ Key bindings
 
 clientkeys = gears.table.join(
-    awful.key({ modkey2,           }, "f",
+    awful.key({ super,           }, "f",
         function (c)
             c.fullscreen = not c.fullscreen
 						if not c.fullscreen then
@@ -331,36 +331,36 @@ clientkeys = gears.table.join(
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
-    awful.key({ modkey,          }, "q",      function (c) c:kill()                         end,
+    awful.key({ control,          }, "q",      function (c) c:kill()                         end,
               {description = "close", group = "client"}),
-    awful.key({ modkey, "Mod4" }, "space",  awful.client.floating.toggle                     ,
+    awful.key({ control, "Mod4" }, "space",  awful.client.floating.toggle                     ,
               {description = "toggle floating", group = "client"}),
-    awful.key({ modkey, "Mod4" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
+    awful.key({ control, "Mod4" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
               {description = "move to master", group = "client"}),
-    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
+    awful.key({ control,           }, "o",      function (c) c:move_to_screen()               end,
               {description = "move to screen", group = "client"}),
-    awful.key({ modkey2,           }, "t",      function (c) c.ontop = not c.ontop            end,
+    awful.key({ super,           }, "t",      function (c) c.ontop = not c.ontop            end,
               {description = "toggle keep on top", group = "client"}),
-    awful.key({ modkey,           }, "n",
+    awful.key({ control,           }, "n",
         function (c)
             -- The client currently has the input focus, so it cannot be
             -- minimized, since minimized clients can't have the focus.
             c.minimized = true
         end ,
         {description = "minimize", group = "client"}),
-    awful.key({ modkey,           }, "m",
+    awful.key({ control,           }, "m",
         function (c)
             c.maximized = not c.maximized
             c:raise()
         end ,
         {description = "(un)maximize", group = "client"}),
-    awful.key({ modkey, "Mod4" }, "m",
+    awful.key({ control, "Mod4" }, "m",
         function (c)
             c.maximized_vertical = not c.maximized_vertical
             c:raise()
         end ,
         {description = "(un)maximize vertically", group = "client"}),
-    awful.key({ modkey, "Shift"   }, "m",
+    awful.key({ control, "Shift"   }, "m",
         function (c)
             c.maximized_horizontal = not c.maximized_horizontal
             c:raise()
@@ -374,11 +374,11 @@ clientbuttons = gears.table.join(
     awful.button({ }, 1, function (c)
         c:emit_signal("request::activate", "mouse_click", {raise = true})
     end),
-    awful.button({ modkey2 }, 1, function (c)
+    awful.button({ super }, 1, function (c)
         c:emit_signal("request::activate", "mouse_click", {raise = true})
         awful.mouse.client.move(c)
     end),
-    awful.button({ modkey2 }, 3, function (c)
+    awful.button({ super }, 3, function (c)
         c:emit_signal("request::activate", "mouse_click", {raise = true})
         awful.mouse.client.resize(c)
     end)
