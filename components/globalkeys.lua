@@ -1,54 +1,153 @@
-globalkeys = gears.table.join(
-		awful.key({}, "XF86Favorites", function() togglePicom() end,
-        {description = "Toggle picom on/off", group = "awesome"}),
-		awful.key({modkey, "Shift"}, "d", function() togglePicom() end,
-        {description = "Toggle picom on/off", group = "awesome"}),
-		awful.key({ modkey, modkey2 }, "d", function() xrandr.xrandr() end,
-        {description = "Change screen layout", group = "media"}),
-		awful.key({}, "XF86Display", function() xrandr.xrandr() end,
-        {description = "Change screen layout", group = "media"}),
-		awful.key({}, "XF86AudioPlay", function() togglePlayPause() end,
-        {description = "Play/Pause music", group = "media"}),
-		awful.key({}, "XF86AudioNext", function() awful.spawn.with_shell("mpc next") end,
-        {description = "Play next track", group = "media"}),
-		awful.key({}, "XF86AudioPrev", function() awful.spawn.with_shell("mpc prev") end,
-        {description = "Play previous track", group = "media"}),
-		awful.key({}, "XF86AudioRaiseVolume", function() volume_widget:inc(5) end,
-        {description = "Increase volume", group = "media"}),
-		awful.key({}, "XF86AudioLowerVolume", function() volume_widget:dec(5) end,
-        {description = "Decrease volume", group = "media"}),
-		awful.key({}, "XF86AudioMute", function() volume_widget:toggle() end,
-        {description = "Toggle mute", group = "media"}),
-		awful.key({}, "XF86AudioMicMute", function() os.execute("pactl set-source-mute 5 toggle") end,
-        {description = "Toggle mic mute", group = "media"}),
-		awful.key({}, "XF86MonBrightnessUp", function() brightness_widget:inc() end,
-        {description = "Increase brightness", group = "media"}),
-		awful.key({modkey, modkey2}, "i", function() brightness_widget:inc() end,
-        {description = "Increase brightness", group = "media"}),
-		awful.key({modkey, modkey2}, "u", function() brightness_widget:dec() end,
-			{description = "Decrease brightness", group = "media"}),
-		awful.key({}, "XF86MonBrightnessDown", function() brightness_widget:dec() end,
-        {description = "Decrease brightness", group = "media"}),
-		awful.key({ modkey, }, "Print", function() awful.spawn.with_shell("gscreenshot -f ~/Screenshots") end,
-			{description = "Take a screenshot of entire screen", group = "screenshot"}),
-		awful.key({ }, "Print", function() awful.spawn.with_shell("gscreenshot -s -c") end,
-			{description = "Take a screenshot of selection", group = "screenshot"}),
-		awful.key({ modkey, modkey2 }, "Print", function() awful.spawn.with_shell("gscreenshot -s -c") end,
-			{description = "Take a screenshot of selection and save", group = "screenshot"}),
-    awful.key({ modkey2,           }, "space",      function () language_widget.switch() end,
-              {description="Change keyboard layout", group="input"}),
-    awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
-              {description="show help", group="awesome"}),
-    awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
-              {description = "view previous", group = "tag"}),
-    awful.key({ modkey,           }, "Right",  awful.tag.viewnext,
-              {description = "view next", group = "tag"}),
-    awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
-              {description = "go back", group = "tag"}),
-    awful.key({ modkey2,           }, "Escape", function() awful.spawn.with_shell("bash ~/.local/bin/lock") end,
-              {description = "lock", group = "awesome"}),
+local awful   = require("awful")
+local gears   = require("gears")
+local menubar = require("menubar")
+local hotkeys_popup = require("awful.hotkeys_popup")
 
--- Vim-like configuration for client focus
+local common = require("common")
+
+local volume_widget      = require("widgets.volume-widget.volume")
+local brightness_widget  = require("widgets.brightness-widget.brightness")
+local language_widget    = require("widgets.keyboard-language-widget.keyboard-language-widget")
+local minimiser          = require("widgets.minimiser.minimiser")
+
+local xrandr = require("utilities.xrandr")
+
+-- That way keybindings on the left can be accessed using the right ctrl
+modkey = "Control"
+-- The second modkey2 is the super key.
+modkey2 = "Mod4"
+-- Toggle switch to turn picom on/off
+
+local isPicomOn = true
+
+local togglePicom = function ()
+	if isPicomOn then
+		awful.spawn.with_shell("pkill picom")
+		isPicomOn = false
+	else
+		awful.spawn.with_shell("picom --experimental-backends")
+		isPicomOn = true
+	end
+end
+
+
+-- Toggle play/pause
+local isMusicPlaying = true
+
+local toggle_play_pause = function ()
+	if isMusicPlaying then
+		awful.spawn.with_shell("mpc pause")
+		isMusicPlaying = false
+	else
+		awful.spawn.with_shell("mpc play")
+		isMusicPlaying = true
+	end
+end
+
+local function build_label(description, group)
+  return {
+    description = description,
+    group = group,
+  }
+end
+
+local function add_mapping_to_group(group, description)
+  return function(modifier_combination, trigger_key)
+    return function(action)
+      return awful.key(
+        modifier_combination,
+        trigger_key,
+        action,
+        build_label(description, group))
+    end
+  end
+end
+
+local globalkeys = gears.table.join(
+    add_mapping_to_group("awesome", "Toggle picom on/off")
+      ({}, "XF86Favorites") (togglePicom),
+
+    add_mapping_to_group("awesome", "Toggle picom on/off")
+		  ({modkey, "Shift"}, "d") (togglePicom),
+
+    add_mapping_to_group("media", "Change screen layout")
+		  ({ modkey, modkey2 }, "d") (xrandr.xrandr),
+
+    add_mapping_to_group("media", "Change screen layout")
+		  ({}, "XF86Display") (xrandr.xrandr),
+
+    add_mapping_to_group("media", "Play/Pause music")
+		  ({}, "XF86AudioPlay") (toggle_play_pause),
+
+    add_mapping_to_group("media", "Play next track")
+		  ({}, "XF86AudioNext") (function() awful.spawn.with_shell("mpc next") end),
+
+    add_mapping_to_group("media", "Play previous track")
+		  ({}, "XF86AudioPrev") (function() awful.spawn.with_shell("mpc prev") end),
+
+    add_mapping_to_group("media", "Increase volume")
+		  ({}, "XF86AudioRaiseVolume") (function() volume_widget:inc(5) end),
+
+    add_mapping_to_group("media", "Decrease volume")
+		  ({}, "XF86AudioLowerVolume") (function() volume_widget:dec(5) end),
+
+    add_mapping_to_group("media", "Toggle mute")
+		  ({}, "XF86AudioMute") (function () volume_widget:toggle() end),
+
+    add_mapping_to_group("media", "Toggle mic mute")
+		  ({}, "XF86AudioMicMute") (function() os.execute("pactl set-source-mute 5 toggle") end),
+
+    add_mapping_to_group("media", "Increase brightness")
+		  ({}, "XF86MonBrightnessUp") (function () brightness_widget:inc() end),
+
+    add_mapping_to_group("media", "Increase brightness")
+		  ({modkey, modkey2}, "i") (function () brightness_widget:inc() end),
+
+
+	  add_mapping_to_group("media", "Decrease brightness")
+		  ({modkey, modkey2}, "u") (function () brightness_widget:dec() end),
+
+
+    add_mapping_to_group("media", "Decrease brightness")
+		  ({}, "XF86MonBrightnessDown") (function () brightness_widget:dec() end),
+
+
+	  add_mapping_to_group("screenshot", "Take a screenshot of entire screen")
+		  ({ modkey, }, "Print") (function() awful.spawn.with_shell("gscreenshot -f ~/Screenshots") end),
+
+
+	  add_mapping_to_group("screenshot", "Take a screenshot of selection")
+		  ({ }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end),
+
+
+	  add_mapping_to_group("screenshot", "Take a screenshot of selection and save")
+		  ({ modkey, modkey2 }, "Print") (function() awful.spawn.with_shell("gscreenshot -s -c") end),
+
+
+    add_mapping_to_group("input", "Change keyboard layout")
+      ({ modkey2 }, "space") (language_widget.switch),
+
+
+    add_mapping_to_group("awesome", "show help")
+      ({ modkey }, "s")      (hotkeys_popup.show_help),
+
+
+    add_mapping_to_group("tag", "view previous")
+      ({ modkey }, "Left")   (awful.tag.viewprev),
+
+
+    add_mapping_to_group("tag", "view next")
+      ({ modkey }, "Right")  (awful.tag.viewnext),
+
+
+    add_mapping_to_group("tag", "go back")
+      ({ modkey }, "Escape") (awful.tag.history.restore),
+
+
+    add_mapping_to_group("awesome", "lock")
+      ({ modkey2 }, "Escape") (function() awful.spawn.with_shell("bash ~/.local/bin/lock") end),
+
+-- add_mappingVim-like configuration for client focus
      awful.key({ modkey,           }, "j",
          function ()
              awful.client.focus.global_bydirection("down")
@@ -171,3 +270,52 @@ globalkeys = gears.table.join(
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the menubar", group = "launcher"})
 )
+-- Bind all key numbers to tags.
+for i = 1, 9 do
+    globalkeys = gears.table.join(globalkeys,
+        -- View tag only.
+        awful.key({ modkey }, "#" .. i + 9,
+                  function ()
+                        local screen = awful.screen.focused()
+                        local tag = screen.tags[i]
+                        if tag then
+                           tag:view_only()
+                        end
+                  end,
+                  {description = "view tag #"..i, group = "tag"}),
+        -- Toggle tag display.
+        awful.key({ modkey, "Mod4" }, "#" .. i + 9,
+                  function ()
+                      local screen = awful.screen.focused()
+                      local tag = screen.tags[i]
+                      if tag then
+                         awful.tag.viewtoggle(tag)
+                      end
+                  end,
+                  {description = "toggle tag #" .. i, group = "tag"}),
+        -- Move client to tag.
+        awful.key({ modkey, "Shift" }, "#" .. i + 9,
+                  function ()
+                      if client.focus then
+                          local tag = client.focus.screen.tags[i]
+                          if tag then
+                              client.focus:move_to_tag(tag)
+                          end
+                     end
+                  end,
+                  {description = "move focused client to tag #"..i, group = "tag"}),
+        -- Toggle tag on focused client.
+        awful.key({ modkey, "Mod4", "Shift" }, "#" .. i + 9,
+                  function ()
+                      if client.focus then
+                          local tag = client.focus.screen.tags[i]
+                          if tag then
+                              client.focus:toggle_tag(tag)
+                          end
+                      end
+                  end,
+                  {description = "toggle focused client on tag #" .. i, group = "tag"})
+    )
+end
+
+return globalkeys
