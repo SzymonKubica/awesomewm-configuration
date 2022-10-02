@@ -3,12 +3,11 @@
 pcall(require, "luarocks.loader")
 
 -- AwesomeWM libraries
-local gears         = require("gears")
-local awful         = require("awful")
-local wibox         = require("wibox")
-local naughty       = require("naughty")
-local menubar       = require("menubar")
-local hotkeys_popup = require("awful.hotkeys_popup")
+local gears   = require("gears")
+local awful   = require("awful")
+local wibox   = require("wibox")
+local naughty = require("naughty")
+local menubar = require("menubar")
 
 -- Common global definitions
 local common = require("common")
@@ -19,8 +18,9 @@ require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
 
 -- Core Components
-local menu = require("components.menu")
-local globalkeys = require("components.globalkeys")
+local menu       = require("components.menu")
+local globalkeys = require("keybindings.globalkeys")
+local clientkeys = require("keybindings.clientkeys")
 
 -- Widgets
 local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")
@@ -33,7 +33,6 @@ local language_widget    = require("widgets.keyboard-language-widget.keyboard-la
 
 -- Utilities
 local autostart = require("utilities.autostart")
-local xrandr    = require("utilities.xrandr")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -61,43 +60,6 @@ end
 -- }}}
 
 -- {{{ Variable definitions
-
--- Initialise the beautiful module using the theme configuration.
-
-
--- Swapped the modkey to be the control key.
--- That way keybindings on the left can be accessed using the right ctrl
-control = "Control"
--- The second modkey2 is the super key.
-super = "Mod4"
-
--- Toggle switch to turn picom on/off
-local isPicomOn = true
-
-local togglePicom = function ()
-	if isPicomOn then
-		awful.spawn.with_shell("pkill picom")
-		isPicomOn = false
-	else
-		awful.spawn.with_shell("picom --experimental-backends")
-		isPicomOn = true
-	end
-end
-
-
--- Toggle play/pause
-local isMusicPlaying = true
-
-local togglePlayPause = function ()
-	if isMusicPlaying then
-		awful.spawn.with_shell("mpc pause")
-		isMusicPlaying = false
-	else
-		awful.spawn.with_shell("mpc play")
-		isMusicPlaying = true
-	end
-end
-
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
@@ -314,61 +276,6 @@ root.buttons(gears.table.join(
 -- }}}
 
 -- {{{ Key bindings
-
-clientkeys = gears.table.join(
-    awful.key({ super,           }, "f",
-        function (c)
-            c.fullscreen = not c.fullscreen
-						if not c.fullscreen then
-							 c.shape = function(cr, w, h)
-								 gears.shape.rounded_rect(cr, w, h, 25)
-							 end
-						 else
-							 c.shape = function(cr, w, h)
-								 gears.shape.rounded_rect(cr, w, h, 0)
-							 end
-						end
-            c:raise()
-        end,
-        {description = "toggle fullscreen", group = "client"}),
-    awful.key({ control,          }, "q",      function (c) c:kill()                         end,
-              {description = "close", group = "client"}),
-    awful.key({ control, "Mod4" }, "space",  awful.client.floating.toggle                     ,
-              {description = "toggle floating", group = "client"}),
-    awful.key({ control, "Mod4" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
-              {description = "move to master", group = "client"}),
-    awful.key({ control,           }, "o",      function (c) c:move_to_screen()               end,
-              {description = "move to screen", group = "client"}),
-    awful.key({ super,           }, "t",      function (c) c.ontop = not c.ontop            end,
-              {description = "toggle keep on top", group = "client"}),
-    awful.key({ control,           }, "n",
-        function (c)
-            -- The client currently has the input focus, so it cannot be
-            -- minimized, since minimized clients can't have the focus.
-            c.minimized = true
-        end ,
-        {description = "minimize", group = "client"}),
-    awful.key({ control,           }, "m",
-        function (c)
-            c.maximized = not c.maximized
-            c:raise()
-        end ,
-        {description = "(un)maximize", group = "client"}),
-    awful.key({ control, "Mod4" }, "m",
-        function (c)
-            c.maximized_vertical = not c.maximized_vertical
-            c:raise()
-        end ,
-        {description = "(un)maximize vertically", group = "client"}),
-    awful.key({ control, "Shift"   }, "m",
-        function (c)
-            c.maximized_horizontal = not c.maximized_horizontal
-            c:raise()
-        end ,
-        {description = "(un)maximize horizontally", group = "client"})
-)
-
-
 
 clientbuttons = gears.table.join(
     awful.button({ }, 1, function (c)
