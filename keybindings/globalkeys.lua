@@ -18,34 +18,8 @@ local join_group     = require("keybindings.common").join_group
 local super          = require("keybindings.common").super
 local control        = require("keybindings.common").control
 
--- Toggle switch to turn picom on/off
-local isPicomOn = true
-
-local togglePicom = function ()
-	if isPicomOn then
-		awful.spawn.with_shell("pkill picom")
-		isPicomOn = false
-	else
-		awful.spawn.with_shell("picom --experimental-backends")
-		isPicomOn = true
-	end
-end
-
-
--- Toggle play/pause
-local isMusicPlaying = true
-
-local toggle_play_pause = function ()
-	if isMusicPlaying then
-		awful.spawn.with_shell("mpc pause")
-		isMusicPlaying = false
-	else
-		awful.spawn.with_shell("mpc play")
-		isMusicPlaying = true
-	end
-end
-
-
+local picom_toggler = require("utilities.toggle").picom_toggler
+local music_toggler = require("utilities.toggle").music_toggler
 
 local globalkeys = gears.table.join()
 
@@ -54,10 +28,10 @@ globalkeys = join_group("awesome", globalkeys,
     ({ control }, "h") (hotkeys_popup.show_help),
 
   add_keybinding("Toggle picom on/off")
-    ({}, "XF86Favorites") (togglePicom),
+    ({}, "XF86Favorites") (function() picom_toggler.toggle(picom_toggler) end),
 
   add_keybinding("Toggle picom on/off")
-    ({control, "Shift"}, "d") (togglePicom),
+    ({control, "Shift"}, "d") (function() picom_toggler.toggle(picom_toggler) end),
 
   add_keybinding("show main menu")
     ({ super,           }, "w")
@@ -93,7 +67,7 @@ globalkeys = join_group("media", globalkeys,
     ({}, "XF86Display") (xrandr.xrandr),
 
   add_keybinding("Play/Pause music")
-    ({}, "XF86AudioPlay") (toggle_play_pause),
+    ({}, "XF86AudioPlay") (function() music_toggler.toggle(music_toggler) end),
 
   add_keybinding("Play next track")
     ({}, "XF86AudioNext") (function() awful.spawn.with_shell("mpc next") end),
