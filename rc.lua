@@ -3,7 +3,6 @@
 pcall(require, "luarocks.loader")
 
 -- AwesomeWM libraries
-local gears   = require("gears")
 local awful   = require("awful")
 local wibox   = require("wibox")
 local naughty = require("naughty")
@@ -18,29 +17,33 @@ require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
 
 -- Core Components
-local menu     = require("components.menu")
 local tasklist = require("components.tasklist")
 local taglist = require("components.taglist")
 
 -- Keybindings
-local globalkeys = require("keybindings.globalkeys")
-local clientkeys = require("keybindings.clientkeys")
-local super      = require("keybindings.common").super
-local control    = require("keybindings.common").control
+local globalkeys    = require("keybindings.globalkeys")
+local clientkeys    = require("keybindings.clientkeys")
+local mousebuttons  = require("keybindings.mousebindings").mousebuttons
+local clientbuttons = require("keybindings.mousebindings").clientbuttons
 
 -- Widgets
-local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")
-local cpu_widget         = require("widgets.cpu-widget.cpu-widget")
-local volume_widget      = require("widgets.volume-widget.volume")
-local brightness_widget  = require("widgets.brightness-widget.brightness")
-local menu_widget        = require("widgets.logout-menu-widget.logout-menu")
 local minimiser          = require("widgets.minimiser.minimiser")
+local cpu_widget         = require("widgets.cpu-widget.cpu-widget")
+local mytextclock        = wibox.widget.textclock("%d %b %H:%M")
 local language_widget    = require("widgets.keyboard-language-widget.keyboard-language-widget")
+local brightness_widget  = require("widgets.brightness-widget.brightness")
+local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")
+local menu_widget        = require("widgets.logout-menu-widget.logout-menu")
+local volume_widget      = require("widgets.volume-widget.volume")
+local separator          = wibox.widget.textbox(" ")
 
 -- Utilities
-local autostart = require("utilities.autostart")
+local autostart     = require("utilities.autostart")
+local set_wallpaper = require("utilities.theming").set_wallpaper
+local round_corners = require("utilities.theming").round_corners
 
 -- {{{ Error handling
+
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
 if awesome.startup_errors then
@@ -63,6 +66,7 @@ do
         in_error = false
     end)
 end
+
 -- }}}
 
 -- {{{ Variable definitions
@@ -78,21 +82,6 @@ menubar.utils.terminal = common.terminal -- Set the terminal for applications th
 -- }}}
 
 -- {{{ Wibar
--- Create a textclock widget
-local mytextclock = wibox.widget.textclock("%d %b %H:%M")
-
-
-local function set_wallpaper(s)
-    -- Wallpaper
-    if common.beautiful.wallpaper then
-        local wallpaper = common.beautiful.wallpaper
-        -- If wallpaper is a function, call it with the screen
-        if type(wallpaper) == "function" then
-            wallpaper = wallpaper(s)
-        end
-        gears.wallpaper.maximized(wallpaper, s, false, {0, 0})
-    end
-end
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
@@ -106,18 +95,9 @@ awful.screen.connect_for_each_screen(function(s)
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contain an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
 
-		s.mytaglist = taglist(s)
+		s.mytaglist  = taglist(s)
     s.mytasklist = tasklist(s)
-		local separator = wibox.widget.textbox(" ")
 
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "bottom", height = 60, screen = s })
@@ -212,29 +192,8 @@ awful.screen.connect_for_each_screen(function(s)
 end)
 -- }}}
 
--- {{{ Mouse bindings
-root.buttons(gears.table.join(
-    awful.button({ }, 3, function () menu:toggle() end),
-    awful.button({ }, 4, awful.tag.viewnext),
-    awful.button({ }, 5, awful.tag.viewprev)
-))
--- }}}
-
-clientbuttons = gears.table.join(
-    awful.button({ }, 1, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
-    end),
-    awful.button({ super }, 1, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
-        awful.mouse.client.move(c)
-    end),
-    awful.button({ super }, 3, function (c)
-        c:emit_signal("request::activate", "mouse_click", {raise = true})
-        awful.mouse.client.resize(c)
-    end)
-)
-
--- Set keys
+-- Set global keybindings.
+root.buttons(mousebuttons)
 root.keys(globalkeys)
 
 -- {{{ Rules
@@ -289,16 +248,11 @@ awful.rules.rules = {
 -- }}}
 
 -- {{{ Signals
+
 -- Signal function to execute when a new client appears.
-client.connect_signal("manage", function (c)
-    -- Set the windows at the slave,
-    -- i.e. put it at the end of others instead of setting it master.
-    -- if not awesome.startup then awful.client.setslave(c) end
-		-- {{{ Uncomment for rounded corners
-	 c.shape = function(cr, w, h)
-		 gears.shape.rounded_rect(cr, w, h, 25)
-	 end
-		-- }}}
+client.connect_signal("manage",
+  function (c)
+    c.shape = round_corners
 
     if awesome.startup
       and not c.size_hints.user_position
@@ -306,9 +260,13 @@ client.connect_signal("manage", function (c)
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
     end
-end)
-client.connect_signal("focus", function(c) c.border_color = common.beautiful.border_focus end)
-client.connect_signal("unfocus", function(c) c.border_color = common.beautiful.border_normal end)
+  end)
+
+client.connect_signal("focus",
+  function(c) c.border_color = common.beautiful.border_focus end)
+client.connect_signal("unfocus",
+  function(c) c.border_color = common.beautiful.border_normal end)
+
 -- }}}
 
 autostart()
