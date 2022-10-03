@@ -17,8 +17,10 @@ require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
 
 -- Core Components
-local tasklist = require("components.tasklist")
-local taglist = require("components.taglist")
+local tasklist    = require("components.tasklist")
+local taglist     = require("components.taglist")
+local wibox_template = require("components.custom_wibox").wibox_template
+local setup_wibox = require("components.custom_wibox").setup_wibox
 
 -- Keybindings
 local globalkeys    = require("keybindings.globalkeys")
@@ -87,108 +89,20 @@ menubar.utils.terminal = common.terminal -- Set the terminal for applications th
 screen.connect_signal("property::geometry", set_wallpaper)
 
 awful.screen.connect_for_each_screen(function(s)
-    -- Wallpaper
-    set_wallpaper(s)
+  set_wallpaper(s)
 
-    -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5"}, s, awful.layout.layouts[1])
+  -- Each screen has its own tag table.
+  awful.tag({ "1", "2", "3", "4", "5"}, s, awful.layout.layouts[1])
 
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
+  -- Create a promptbox for each screen
+  s.mypromptbox = awful.widget.prompt()
 
-		s.mytaglist  = taglist(s)
-    s.mytasklist = tasklist(s)
+  s.mytaglist  = taglist(s)
+  s.mytasklist = tasklist(s)
 
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "bottom", height = 60, screen = s })
-
-    -- Add widgets to the wibox
-		if s.geometry.x == 0 then
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-				expand = "none",
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            s.mytaglist,
-            s.mypromptbox,
-						separator,
-						minimiser,
-						separator,
-        },
-        s.mytasklist, -- Middle widget
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-						separator,
-						wibox.widget.systray(),
-						separator,
-						cpu_widget({
-							width = 200,
-							color = "#af0000",
-						}),
-						separator,
-            mytextclock,
-						language_widget.widget,
-						separator,
-						volume_widget({
-							widget_type = 'arc'
-						}),
-						separator,
-						brightness_widget({
-							type = 'arc',
-							program = 'brillo',
-							step = 3,
-						}),
-						separator,
-						battery_arc_widget({
-							show_current_level = true,
-							size = 40,
-						}),
-						separator,
-						menu_widget(),
-						separator,
-        },
-    }
-	else
-	s.mywibox:setup {
-					layout = wibox.layout.align.horizontal,
-					expand = "none",
-					{ -- Left widgets
-							layout = wibox.layout.fixed.horizontal,
-							s.mytaglist,
-							s.mypromptbox,
-							separator,
-							minimiser,
-							separator,
-					},
-					s.mytasklist, -- Middle widget
-					{ -- Right widgets
-							layout = wibox.layout.fixed.horizontal,
-							separator,
-							wibox.widget.systray(),
-							separator,
-							cpu_widget({
-								width = 200,
-								color = "#af0000",
-							}),
-							separator,
-							mytextclock,
-							separator,
-							language_widget.widget,
-							separator,
-							volume_widget({
-								widget_type = 'arc'
-							}),
-							separator,
-							battery_arc_widget({
-								show_current_level = true,
-								size = 40,
-							}),
-							separator,
-							menu_widget(),
-							separator,
-					},
-			}
-		end
+  -- Create the wibox
+  s.mywibox = wibox_template(s)
+  setup_wibox(s)
 end)
 -- }}}
 
