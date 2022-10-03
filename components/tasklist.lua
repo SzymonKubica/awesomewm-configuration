@@ -35,6 +35,31 @@ local tasklist = function(s)
       spacing = 20,
       layout  = wibox.layout.fixed.horizontal
     },
+    widget_template = {
+      {
+        {
+          {
+            {
+              id     = 'icon_role',
+              widget = wibox.widget.imagebox,
+            },
+            top     = 6,
+            bottom  = 6,
+            widget  = wibox.container.margin,
+          },
+          {
+            id     = 'text_role',
+            widget = wibox.widget.textbox,
+          },
+          layout = wibox.layout.fixed.horizontal,
+        },
+        left   = 20,
+        right  = 20,
+        widget = wibox.container.margin
+      },
+      id     = 'background_role',
+      widget = wibox.container.background,
+    },
   }
 end
 
