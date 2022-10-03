@@ -18,9 +18,15 @@ require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
 
 -- Core Components
-local menu       = require("components.menu")
+local menu     = require("components.menu")
+local tasklist = require("components.tasklist")
+
+
+-- Keybindings
 local globalkeys = require("keybindings.globalkeys")
 local clientkeys = require("keybindings.clientkeys")
+local super      = require("keybindings.common").super
+local control    = require("keybindings.common").control
 
 -- Widgets
 local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")
@@ -68,15 +74,13 @@ awful.layout.layouts = {
 }
 
 -- {{{ Menu
--- Menubar configuration
 menubar.utils.terminal = common.terminal -- Set the terminal for applications that require it
 -- }}}
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock("%d %b %H:%M")
+local mytextclock = wibox.widget.textclock("%d %b %H:%M")
 
--- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
                     awful.button({ }, 1, function(t) t:view_only() end),
                     awful.button({ control }, 1, function(t)
@@ -93,29 +97,6 @@ local taglist_buttons = gears.table.join(
                     awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
                     awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
                 )
-
-local tasklist_buttons = gears.table.join(
-                     awful.button({ }, 1, function (c)
-                                              if c == client.focus then
-                                                  c.minimized = true
-                                              else
-                                                  c:emit_signal(
-                                                      "request::activate",
-                                                      "tasklist",
-                                                      {raise = true}
-                                                  )
-                                              end
-                                          end),
-                     awful.button({ }, 3, function()
-                                              -- TODO: customise open client list
-                                              awful.menu.client_list({ theme = { width = 250 } })
-                                          end),
-                     awful.button({ }, 4, function ()
-                                              awful.client.focus.byidx(1)
-                                          end),
-                     awful.button({ }, 5, function ()
-                                              awful.client.focus.byidx(-1)
-                                          end))
 
 local function set_wallpaper(s)
     -- Wallpaper
@@ -156,22 +137,8 @@ awful.screen.connect_for_each_screen(function(s)
 		buttons = taglist_buttons
 		}
 
-
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist {
-        screen  = s,
-        filter  = awful.widget.tasklist.filter.currenttags,
-        buttons  = tasklist_buttons,
-		    style    = {
-					shape_border_width = 1,
-					shape  = gears.shape.rounded_bar,
-				},
-				layout   = {
-					spacing = 20,
-					layout  = wibox.layout.fixed.horizontal
-				},
-    }
-
+    s.mytasklist = tasklist(s)
 		local separator = wibox.widget.textbox(" ")
 
     -- Create the wibox
