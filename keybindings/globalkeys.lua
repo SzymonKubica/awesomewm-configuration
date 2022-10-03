@@ -25,7 +25,7 @@ local globalkeys = gears.table.join()
 
 globalkeys = join_group("awesome", globalkeys,
   add_keybinding("show help")
-    ({ control }, "h") (hotkeys_popup.show_help),
+    ({ super }, "s") (hotkeys_popup.show_help),
 
   add_keybinding("Toggle picom on/off")
     ({}, "XF86Favorites") (function() picom_toggler.toggle(picom_toggler) end),
