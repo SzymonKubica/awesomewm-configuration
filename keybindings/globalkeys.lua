@@ -10,6 +10,7 @@ local brightness_widget  = require("widgets.brightness-widget.brightness")
 local language_widget    = require("widgets.keyboard-language-widget.keyboard-language-widget")
 local minimiser          = require("widgets.minimiser.minimiser")
 local menu               = require("components.menu")
+local dmenu              = require("components.dmenu")
 
 local xrandr = require("utilities.xrandr")
 
