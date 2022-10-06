@@ -1,4 +1,4 @@
---- Separating Multiple Monitor functions as a separeted module (taken from awesome wiki)
+-- Separating Multiple Monitor functions as a separeted module (taken from awesome wiki)
 --
 local gtable  = require("gears.table")
 local spawn   = require("awful.spawn")
@@ -64,8 +64,7 @@ local function menu()
 			if o == "eDP-1" then
 				cmd = cmd .. " --output " .. o .. " --mode 3840x2400 --pos 0x0"
 			elseif o == "HDMI-1" then
-				cmd = cmd .. " --output " .. o .. " --mode 2560x1080 --pos 3840x0 --scale 2x2"
-				-- cmd = cmd .. " --output " .. o .. " --mode auto --pos 3840x0 --scale 2x2"
+				cmd = cmd .. " --output " .. o .. " --mode auto --pos 3840x0 --scale 2x2"
 			else
 				cmd = cmd .. " --output " .. o .. " --auto"
 			end
@@ -108,7 +107,6 @@ local function naughty_destroy_callback(reason)
 			state.index = nil
 		end
 	end
-	--spawn.with_shell("~/.config/awesome/setup_monitors.sh")
 end
 
 	local function xrandr()
@@ -131,7 +129,7 @@ end
 	end
 	state.cid = naughty.notify({ text = label,
 	icon = icon_path,
-	shape = function (cr, w, h) 
+	shape = function (cr, w, h)
 		gears.shape.rounded_rect(cr, w, h, 25)
 	end,
 	timeout = 4,
