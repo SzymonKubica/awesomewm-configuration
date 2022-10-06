@@ -16,10 +16,10 @@ require("awful.hotkeys_popup.keys")
 local common = require("common")
 
 -- Core Components
-local tasklist    = require("components.tasklist")
-local taglist     = require("components.taglist")
+local tasklist       = require("components.tasklist")
+local taglist        = require("components.taglist")
 local wibox_template = require("components.custom_wibox").wibox_template
-local setup_wibox = require("components.custom_wibox").setup_wibox
+local setup_wibox    = require("components.custom_wibox").setup_wibox
 
 -- Utilities
 local autostart     = require("utilities.autostart")
