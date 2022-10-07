@@ -213,7 +213,7 @@ globalkeys = join_group("launcher", globalkeys,
   add_keybinding("run prompt")
     ({ control }, "space")
     (function ()
-			awful.util.spawn("dmenu_run -b -q -nb '#181818' -sb '#af0000' -sf '#181818' -h 60 -fn 'JetBrains Mono Nerd Font-10'")
+      awful.util.spawn("dmenu_run -b -q -nb '#181818' -sb '#af0000' -sf '#181818' -h 60 -fn 'JetBrains Mono Nerd Font-10'")
     end),
 
   add_keybinding("show the menubar")
