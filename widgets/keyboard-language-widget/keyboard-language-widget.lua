@@ -4,7 +4,7 @@ local awful         = require("awful")
 local language_widget = {}
 
 language_widget.cmd = "setxkbmap"
-language_widget.layout = { { "us", "" }, { "pl", "" } }
+language_widget.layout = { { "us", "" }, { "pl", "" }, { "de", "qwerty" }}
 language_widget.current = 1
 language_widget.widget = wibox.widget.textbox()
 language_widget.widget.font =  "JetBrains Mono Nerd Font 10"
