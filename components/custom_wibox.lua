@@ -27,8 +27,8 @@ end
 local primary_right_widgets = {
   layout = wibox.layout.fixed.horizontal,
   spacing = 10,
-  wibox.widget.systray(),
   cpu_widget,
+  wibox.widget.systray(),
   mytextclock,
   language_widget.widget,
   volume_widget,
@@ -40,8 +40,8 @@ local primary_right_widgets = {
 local secondary_right_widgets = {
   layout = wibox.layout.fixed.horizontal,
   spacing = 10,
-  wibox.widget.systray(),
   cpu_widget,
+  wibox.widget.systray(),
   mytextclock,
   language_widget.widget,
   volume_widget,
