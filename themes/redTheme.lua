@@ -4,6 +4,7 @@
 
 local theme_assets = require("beautiful.theme_assets")
 local xresources = require("beautiful.xresources")
+local gears = require("gears")
 
 local dpi = xresources.apply_dpi
 
@@ -46,8 +47,13 @@ theme.tasklist_shape_border_color = minimizeDark
 theme.tasklist_shape_border_width_focus = 3
 theme.tooltip_border_color = themeRed
 
+theme.hotkeys_bg = theme.bg_normal
 theme.hotkeys_modifiers_fg = minimizeDark
-theme.hotkeys_border_color = minimizeDark
+theme.hotkeys_border_color = themeRed
+theme.hotkeys_shape = function(cr, w, h)
+                        gears.shape.rounded_rect(cr, w, h, 25)
+                      end
+
 -- There are other variable sets
 -- overriding the default one when
 -- defined, the sets are:
@@ -70,6 +76,10 @@ theme.tasklist_disable_task_name = true
 -- notification_[bg|fg]
 -- notification_[width|height|margin]
 -- notification_[border_color|border_width|shape|opacity]
+theme.notification_border_color = themeRed
+theme.notification_shape = function(cr, w, h)
+                        gears.shape.rounded_rect(cr, w, h, 25)
+                      end
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
