@@ -1,6 +1,5 @@
 local awful         = require("awful")
 local gears         = require("gears")
-local menubar       = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
 
 local common = require("common")
@@ -21,6 +20,8 @@ local control        = require("keybindings.common").control
 
 local picom_toggler = require("utilities.toggle").picom_toggler
 local music_toggler = require("utilities.toggle").music_toggler
+local launch_german = require("utilities.german_setup")
+local launch_tasks = require("utilities.tasks")
 
 local globalkeys = gears.table.join()
 
@@ -47,6 +48,12 @@ globalkeys = join_group("awesome", globalkeys,
 
   add_keybinding("quit awesome")
     ({ control, "Shift"   }, "q") (awesome.quit),
+
+  add_keybinding("launch setup for learning german")
+    ({ control, "Shift"   }, "g") (launch_german),
+
+  add_keybinding("launch task list in chrome")
+    ({ control, "Shift"   }, "t") (launch_tasks),
 
   add_keybinding("lua execute prompt")
     ({ super }, "x")
@@ -81,6 +88,12 @@ globalkeys = join_group("media", globalkeys,
 
   add_keybinding("Decrease volume")
     ({}, "XF86AudioLowerVolume") (function() volume_widget:dec(5) end),
+
+  add_keybinding("Increase volume (above 100%)")
+    ({ control }, "XF86AudioRaiseVolume") (function() awful.spawn.with_shell("pactl set-sink-volume @DEFAULT_SINK@ +10%") end),
+
+  add_keybinding("Increase volume (above 100%)")
+    ({ control }, "XF86AudioLowerVolume") (function() awful.spawn.with_shell("pactl set-sink-volume @DEFAULT_SINK@ -10%") end),
 
   add_keybinding("Toggle mute")
     ({}, "XF86AudioMute") (function () volume_widget:toggle() end),
@@ -214,10 +227,7 @@ globalkeys = join_group("launcher", globalkeys,
     ({ control }, "space")
     (function ()
       awful.util.spawn("dmenu_run -b -q -nb '#181818' -sb '#af0000' -sf '#181818' -h 60 -fn 'JetBrains Mono Nerd Font-10'")
-    end),
-
-  add_keybinding("show the menubar")
-    ({ control }, "p") (function() menubar.show() end)
+    end)
 )
 
 globalkeys = join_group("layout", globalkeys,
