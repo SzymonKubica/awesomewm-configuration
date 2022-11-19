@@ -63,10 +63,8 @@ local function menu()
 		for i, o in pairs(choice) do
 			if o == "eDP-1" then
 				cmd = cmd .. " --output " .. o .. " --mode 3840x2400 --pos 0x0"
-			elseif o == "HDMI-1" then
-				cmd = cmd .. " --output " .. o .. " --mode 2560x1080 --pos 3840x0"
 			else
-				cmd = cmd .. " --output " .. o .. " --auto"
+				cmd = cmd .. " --output " .. o .. " --auto --pos 3840x0 --scale 2x2"
 			end
 			if i > 1 then
 				cmd = cmd .. " --right-of " .. choice[i-1]
