@@ -20,6 +20,8 @@ local battery_arc_widget = require("widgets.batteryarc-widget.batteryarc")({
 local volume_widget      = require("widgets.volume-widget.volume")({
   widget_type = 'arc' })
 
+local spacing_widget = wibox.widget.textbox(" ")
+
 local wibox_template = function(s)
    return awful.wibar({ position = "bottom", height = 60, screen = s })
 end
@@ -35,6 +37,7 @@ local primary_right_widgets = {
   brightness_widget,
   battery_arc_widget,
   menu_widget,
+  spacing_widget,
 }
 
 local secondary_right_widgets = {
@@ -47,6 +50,7 @@ local secondary_right_widgets = {
   volume_widget,
   battery_arc_widget,
   menu_widget,
+  spacing_widget,
 }
 
 local function left_widgets(s)
