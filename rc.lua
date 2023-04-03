@@ -82,6 +82,12 @@ menubar.utils.terminal = common.terminal
 awful.screen.connect_for_each_screen(function(s)
   set_wallpaper(s)
 
+  -- When setting up external 1080p display, change the dpi accordingly.
+  -- Doesn't affect the apps.
+  --if s.geometry.height == 1080  then
+   -- s.dpi= 81
+  --end
+
   -- Each screen has its own tag table.
   awful.tag({ "1", "2", "3", "4", "5"}, s, awful.layout.layouts[1])
 
